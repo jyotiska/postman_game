@@ -1,0 +1,6 @@
+{
+  "name": "postman_game",
+  "version": "0.0.1",
+  "description": "Realtime chat based game based on Node and Websockets",
+  "dependencies": {}
+}
