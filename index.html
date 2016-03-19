@@ -54,18 +54,25 @@
     <script>
       var socket = io();
 
+      $(function() {
+        $("#message").focus();
+      });
+
       socket.on('connect', function() {
         var randomNumber = Math.floor(Math.random() * 10000);
         var randomGuestName = "Guest " + randomNumber;
-        console.log('Guest name: ' + randomGuestName);
         socket.emit('new_user', randomGuestName);
       });
 
-      $('#send_button').click(function() {
+      var doAction = function() {
         var textContent = $('#message').val();
         if (textContent.startsWith("/nick")) {
           socket.emit('change_nick', textContent.split(" ")[1]);
-          var newNameContent = $('#content').val() + "\n" + 'You are now known as ' + textContent.split(" ")[1];
+          if ($('#content').val() == "") {
+            var newNameContent = 'You are now known as ' + textContent.split(" ")[1];
+          } else {
+            var newNameContent = $('#content').val() + "\n" + 'You are now known as ' + textContent.split(" ")[1];
+          }
           $('#content').val(newNameContent);
         } else if (textContent.startsWith("/join")) {
           socket.emit('join_room', textContent.split(" ")[1]);
@@ -73,6 +80,17 @@
           socket.emit('chat_message', textContent);
         }
         $('#message').val('');
+      };
+
+      $('#send_button').click(function() {
+        doAction();
+      });
+
+      $('#message').keyup(function(e){
+        if(e.keyCode == 13)
+        {
+          doAction();
+        }
       });
 
       socket.on('send_message', function(msg){
@@ -86,6 +104,10 @@
 
       socket.on('refresh_rooms', function(rooms) {
         $('#rooms').val(rooms.join("\n"));
+      });
+
+      socket.on('refresh_users', function(users) {
+        $('#users').val(users.join("\n"));
       });
 
       socket.on('header', function(name) {
