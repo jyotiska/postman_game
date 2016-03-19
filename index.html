@@ -3,14 +3,6 @@
   <head>
     <title>Postman RPSLS Game</title>
     <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
       textarea {
         resize: none;
       }
@@ -21,24 +13,6 @@
     <script src="https://code.jquery.com/jquery-2.2.2.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/united/bootstrap.min.css">
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
-    <script>
-      $(document).ready(function() {
-        var socket = io();
-        $('#send_button').click(function() {
-          socket.emit('chat message', $('#message').val());
-          $('#message').val('');
-          return false;
-        });
-        socket.on('chat message', function(msg){
-          var current_text = $('#content').val();
-          if (current_text == "") {
-            $('#content').val(msg);
-          } else {
-            $('#content').val(current_text + "\n" + msg);
-          }
-        });
-      });
-    </script>
 
     <br><br>
 
@@ -53,14 +27,14 @@
     <div class="row">
       <div class="col-md-1"></div>
       <div class="col-md-8">
-        <textarea class="form-control" rows="25" style="font-family:monospace;" id="content"></textarea>
+        <textarea class="form-control" readonly rows="25" style="font-family:monospace;background-color:white" id="content"></textarea>
       </div>
       <div class="col-md-2">
         <p>Available Rooms</p>
-        <textarea class="form-control" rows="10" style="font-family:monospace;" id="rooms"></textarea>
+        <textarea class="form-control" readonly rows="10" style="font-family:monospace;background-color:white" id="rooms"></textarea>
         <br>
         <p>Available Users</p>
-        <textarea class="form-control" rows="10" style="font-family:monospace;" id="users"></textarea>
+        <textarea class="form-control" readonly rows="10" style="font-family:monospace;background-color:white" id="users"></textarea>
       </div>
       <div class="col-md-1"></div>
     </div>
@@ -76,5 +50,47 @@
       </div>
       <div class="col-md-1"></div>
     </div>
+
+    <script>
+      var socket = io();
+
+      socket.on('connect', function() {
+        var randomNumber = Math.floor(Math.random() * 10000);
+        var randomGuestName = "Guest " + randomNumber;
+        console.log('Guest name: ' + randomGuestName);
+        socket.emit('new_user', randomGuestName);
+      });
+
+      $('#send_button').click(function() {
+        var textContent = $('#message').val();
+        if (textContent.startsWith("/nick")) {
+          socket.emit('change_nick', textContent.split(" ")[1]);
+          var newNameContent = $('#content').val() + "\n" + 'You are now known as ' + textContent.split(" ")[1];
+          $('#content').val(newNameContent);
+        } else if (textContent.startsWith("/join")) {
+          socket.emit('join_room', textContent.split(" ")[1]);
+        } else {
+          socket.emit('chat_message', textContent);
+        }
+        $('#message').val('');
+      });
+
+      socket.on('send_message', function(msg){
+        var previousContent = $('#content').val();
+        if (previousContent == "") {
+          $('#content').val(msg);
+        } else {
+          $('#content').val(previousContent + "\n" + msg);
+        }
+      });
+
+      socket.on('refresh_rooms', function(rooms) {
+        $('#rooms').val(rooms.join("\n"));
+      });
+
+      socket.on('header', function(name) {
+        $('#current_room').html('Current Room: ' + '<b>' + name + '</b>');
+      });
+    </script>
   </body>
 </html>
