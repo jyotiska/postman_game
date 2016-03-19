@@ -1,9 +1,7 @@
 <!doctype html>
 <html>
   <head>
-    <script src="https://code.jquery.com/jquery-2.2.2.min.js"></script>
-    <script src="/socket.io/socket.io.js"></script>
-    <title>Socket.IO chat</title>
+    <title>Postman RPSLS Game</title>
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       body { font: 13px Helvetica, Arial; }
@@ -13,23 +11,70 @@
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
+      textarea {
+        resize: none;
+      }
     </style>
   </head>
-  <script>
-    var socket = io();
-    $('form').submit(function(){
-      socket.emit('chat message', $('#m').val());
-      $('#m').val('');
-      return false;
-    });
-    socket.on('chat message', function(msg){
-        $('#messages').append($('<li>').text(msg));
-      });
-  </script>
   <body>
-    <ul id="messages"></ul>
-    <form action="">
-      <input id="m" autocomplete="off" /><button>Send</button>
-    </form>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.2.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.6/united/bootstrap.min.css">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script>
+      $(document).ready(function() {
+        var socket = io();
+        $('#send_button').click(function() {
+          socket.emit('chat message', $('#message').val());
+          $('#message').val('');
+          return false;
+        });
+        socket.on('chat message', function(msg){
+          var current_text = $('#content').val();
+          if (current_text == "") {
+            $('#content').val(msg);
+          } else {
+            $('#content').val(current_text + "\n" + msg);
+          }
+        });
+      });
+    </script>
+
+    <br><br>
+
+    <div class="row">
+      <div class="col-md-1"></div>
+      <div class="col-md-8">
+        <div class="well well-sm" id="current_room">Current Room: </div>
+      </div>
+      <div class="col-md-3"></div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-1"></div>
+      <div class="col-md-8">
+        <textarea class="form-control" rows="25" style="font-family:monospace;" id="content"></textarea>
+      </div>
+      <div class="col-md-2">
+        <p>Available Rooms</p>
+        <textarea class="form-control" rows="10" style="font-family:monospace;" id="rooms"></textarea>
+        <br>
+        <p>Available Users</p>
+        <textarea class="form-control" rows="10" style="font-family:monospace;" id="users"></textarea>
+      </div>
+      <div class="col-md-1"></div>
+    </div>
+    <hr>
+
+    <div class="row">
+      <div class="col-md-1"></div>
+      <div class="col-md-8">
+        <input type="email" class="form-control" id="message" placeholder="Type a message...">
+      </div>
+      <div class="col-md-2">
+        <button type="button" class="btn btn-primary btn-block" id="send_button">Send</button>
+      </div>
+      <div class="col-md-1"></div>
+    </div>
   </body>
 </html>
