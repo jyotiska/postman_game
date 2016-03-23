@@ -78,10 +78,11 @@
           $('#content').val(newNameContent);
         } else if (textContent.startsWith("/join")) {
           socket.emit('join_room', textContent.split(" ")[1]);
-        } else  if (textContent.startsWith("/join")) {
+        } else if (textContent.startsWith("/join")) {
           socket.emit('start_game'), textContent.split(" ")[1]);
-        }
-        else if (textContent.startsWith("/help")) {
+        } else if (textContent.startsWith("/play")) {
+          socket.emit('play_game'), textContent.split(" ")[1]);
+        } else if (textContent.startsWith("/help")) {
           if ($('#content').val() == "") {
             var newContent = initText;
           } else {
