@@ -123,8 +123,8 @@
         $('#users').val(users.join("\n"));
       });
 
-      socket.on('header', function(name) {
-        $('#current_room').html('Current Room: ' + '<b>' + name + '</b>');
+      socket.on('header', function(name, username) {
+        $('#current_room').html('Current Room: ' + '<b>' + name + '</b>&nbsp;&nbsp;&nbsp;' + 'Current User: ' + '<b>' + username + '</b>');
       });
     </script>
   </body>

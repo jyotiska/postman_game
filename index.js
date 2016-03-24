@@ -17,7 +17,7 @@ io.on('connection', function(socket){
         socket.username = username;
         socket.room = 'Basement';
         socket.join('Basement');
-        socket.emit('header', 'Basement');
+        socket.emit('header', 'Basement', username);
         socket.emit('refresh_rooms', rooms);
         socket.broadcast.to(socket.room).emit('send_message', socket.username + ' has joined this room');
         usernames["Basement"].push(username);
@@ -31,6 +31,7 @@ io.on('connection', function(socket){
         }
         socket.username = newname;
         usernames[socket.room].push(newname);
+        socket.emit('header', socket.room, socket.username);
         socket.emit('refresh_users', usernames[socket.room]);
     });
 
@@ -58,7 +59,7 @@ io.on('connection', function(socket){
         socket.emit('send_message', 'You are now in ' + room);
         socket.broadcast.to(current_room).emit('send_message', socket.username + ' has left this room');
         socket.room = room;
-        socket.emit('header', room);
+        socket.emit('header', room, socket.username);
         socket.broadcast.to(room).emit('send_message', socket.username + ' has joined this room');
         socket.emit('refresh_rooms', rooms);
         socket.emit('refresh_users', usernames[socket.room]);
@@ -83,8 +84,6 @@ io.on('connection', function(socket){
             game_list[socket.room] = 1;
             game_number[socket.room] = Math.floor(Math.random() * 1000);
             game_progress[socket.room][socket.username] = parseInt(number);
-            console.log(game_number[socket.room]);
-            console.log(game_progress[socket.room]);
         }
     });
 
@@ -104,7 +103,6 @@ io.on('connection', function(socket){
                 io.sockets["in"](socket.room).emit('send_message', socket.username + ' has entered. Waiting for ' + remainingPlayers.join(','));
             }
             game_progress[socket.room][socket.username] = parseInt(number);
-            console.log(game_progress[socket.room]);
             checkGame();
         }
     });
@@ -146,11 +144,7 @@ io.on('connection', function(socket){
 
         if (gameComplete == true) {
             closestNum = getClosest(allValues, game_number[socket.room]);
-            console.log('Closest num ' + closestNum);
-            console.log('System num' + game_number[socket.room]);
-            console.log(game_progress[socket.room]);
             for (key in game_progress[socket.room]) {
-                console.log(key + ' ' + game_progress[socket.room][key]);
                 if (game_progress[socket.room][key] == closestNum) {
                     io.sockets["in"](socket.room).emit('send_message', 'Game complete. ' + key + ' is the winner!');
                 }
