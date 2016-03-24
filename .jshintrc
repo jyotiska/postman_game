@@ -31,7 +31,7 @@
     "laxbreak": false,
     "laxcomma": false,
     "loopfunc": false,
-    "maxlen": 120,
+    "maxlen": 250,
     "multistr": false,
     "notypeof": false,
     "proto": false,
