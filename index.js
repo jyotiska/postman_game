@@ -66,9 +66,9 @@ io.on('connection', function(socket){
 
     socket.on('start_game', function(number) {
         if (game_list[socket.room] == 1) {
-            io.sockets["in"](socket.room).emit('send_message', 'A game is already in progress.');
+            socket.emit('send_message', 'A game is already in progress.');
         } else if (usernames[socket.room].length < 2 || usernames[socket.room].length > 4) {
-            io.sockets["in"](socket.room).emit('send_message', 'The number of users in this room to play this game should be between 2 to 4');
+            socket.emit('send_message', 'Cannot start the game. The number of users in this room to play this game should be between 2 to 4.');
         }
         else {
             var remainingPlayers = [];
@@ -78,7 +78,7 @@ io.on('connection', function(socket){
                     game_progress[socket.room][usernames[socket.room][i]] = 0;
                 }
             }
-            io.sockets["in"](socket.room).emit('send_message', socket.username + ' has started the game. Please choose a number between 1 and 1000 and send a message as - /play <your_number>');
+            io.sockets["in"](socket.room).emit('send_message', socket.username + ' has started the game. Please choose a number between 1 and 1000 and send a message as - /play <your_number>.');
             io.sockets["in"](socket.room).emit('send_message', 'Waiting for - ' + remainingPlayers.join(',') + '...');
             game_list[socket.room] = 1;
             game_number[socket.room] = Math.floor(Math.random() * 1000);
@@ -90,9 +90,9 @@ io.on('connection', function(socket){
 
     socket.on('play_game', function(number) {
         if (game_list[socket.room] == 0) {
-            io.sockets["in"](socket.room).emit('send_message', 'No active game found. Please start game using /start');
+            socket.emit('send_message', 'No active game found. Please start game using /start');
         } else if (game_progress[socket.room][socket.username] != 0) {
-            io.sockets["in"](socket.room).emit('send_message', 'You have already played your turn');
+            socket.emit('send_message', 'You have already played your turn');
         } else {
             var remainingPlayers = [];
             for (var i=0; i < usernames[socket.room].length; i++) {
