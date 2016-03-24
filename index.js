@@ -79,7 +79,7 @@ io.on('connection', function(socket){
                     game_progress[socket.room][usernames[socket.room][i]] = 0;
                 }
             }
-            io.sockets["in"](socket.room).emit('send_message', socket.username + ' has started the game. Please choose a number between 1 and 1000 and send a message as - /play <your_number>.');
+            io.sockets["in"](socket.room).emit('send_message', socket.username + ' has started the game and entered ' + parseInt(number) + '. Please choose a number between 1 and 1000 and send a message as - /play <your_number>.');
             io.sockets["in"](socket.room).emit('send_message', 'Waiting for - ' + remainingPlayers.join(',') + '...');
             game_list[socket.room] = 1;
             game_number[socket.room] = Math.floor(Math.random() * 1000);
@@ -100,7 +100,10 @@ io.on('connection', function(socket){
                 }
             }
             if (remainingPlayers.length > 0) {
-                io.sockets["in"](socket.room).emit('send_message', socket.username + ' has entered. Waiting for ' + remainingPlayers.join(','));
+                io.sockets["in"](socket.room).emit('send_message', socket.username + ' has entered ' + parseInt(number) + '. Waiting for ' + remainingPlayers.join(','));
+            }
+            else {
+                io.sockets["in"](socket.room).emit('send_message', socket.username + ' has entered ' + parseInt(number) + '.');
             }
             game_progress[socket.room][socket.username] = parseInt(number);
             checkGame();
@@ -146,7 +149,7 @@ io.on('connection', function(socket){
             closestNum = getClosest(allValues, game_number[socket.room]);
             for (key in game_progress[socket.room]) {
                 if (game_progress[socket.room][key] == closestNum) {
-                    io.sockets["in"](socket.room).emit('send_message', 'Game complete. ' + key + ' is the winner!');
+                    io.sockets["in"](socket.room).emit('send_message', 'Game complete. System number was ' + game_number[socket.room] + '. ' + key + ' is the winner!');
                 }
             }
             game_progress[socket.room] = {};
