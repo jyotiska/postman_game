@@ -66,9 +66,9 @@ io.on('connection', function(socket){
 
     socket.on('start_game', function(number) {
         if (game_list[socket.room] == 1) {
-            socket.broadcast.to(socket.room).emit('send_message', 'A game is already in progress.');
+            io.sockets["in"](socket.room).emit('send_message', 'A game is already in progress.');
         } else if (usernames[socket.room].length < 2 || usernames[socket.room].length > 4) {
-            socket.broadcast.to(socket.room).emit('send_message', 'The number of users in this room to play this game should be between 2 to 4');
+            io.sockets["in"](socket.room).emit('send_message', 'The number of users in this room to play this game should be between 2 to 4');
         }
         else {
             var remainingPlayers = [];
@@ -78,28 +78,33 @@ io.on('connection', function(socket){
                     game_progress[socket.room][usernames[socket.room][i]] = 0;
                 }
             }
-            socket.broadcast.to(socket.room).emit('send_message', socket.username + ' has started the game. Please choose a number between 1 and 1000 and send a message as - /play <your_number>');
-            socket.broadcast.to(socket.room).emit('send_message', 'Waiting for ' + remainingPlayers.join(','));
+            io.sockets["in"](socket.room).emit('send_message', socket.username + ' has started the game. Please choose a number between 1 and 1000 and send a message as - /play <your_number>');
+            io.sockets["in"](socket.room).emit('send_message', 'Waiting for - ' + remainingPlayers.join(',') + '...');
             game_list[socket.room] = 1;
             game_number[socket.room] = Math.floor(Math.random() * 1000);
             game_progress[socket.room][socket.username] = parseInt(number);
+            console.log(game_number[socket.room]);
+            console.log(game_progress[socket.room]);
         }
     });
 
     socket.on('play_game', function(number) {
         if (game_list[socket.room] == 0) {
-            socket.broadcast.to(socket.room).emit('send_message', 'No active game found. Please start game using /start');
+            io.sockets["in"](socket.room).emit('send_message', 'No active game found. Please start game using /start');
         } else if (game_progress[socket.room][socket.username] != 0) {
-            socket.broadcast.to(socket.room).emit('send_message', 'You have already played your turn');
+            io.sockets["in"](socket.room).emit('send_message', 'You have already played your turn');
         } else {
             var remainingPlayers = [];
             for (var i=0; i < usernames[socket.room].length; i++) {
-                if (usernames[socket.room][i] != socket.username) {
+                if (usernames[socket.room][i] != socket.username && game_progress[socket.room][usernames[socket.room][i]] == 0) {
                     remainingPlayers.push(usernames[socket.room][i]);
                 }
             }
-            socket.broadcast.to(socket.room).emit('send_message', socket.username + ' has entered. Waiting for ' + remainingPlayers.join(','));
+            if (remainingPlayers.length > 0) {
+                io.sockets["in"](socket.room).emit('send_message', socket.username + ' has entered. Waiting for ' + remainingPlayers.join(','));
+            }
             game_progress[socket.room][socket.username] = parseInt(number);
+            console.log(game_progress[socket.room]);
             checkGame();
         }
     });
@@ -140,15 +145,19 @@ io.on('connection', function(socket){
         }
 
         if (gameComplete == true) {
-            game_list[socket.room] = 0;
-            game_number[socket.room] = 0;
             closestNum = getClosest(allValues, game_number[socket.room]);
+            console.log('Closest num ' + closestNum);
+            console.log('System num' + game_number[socket.room]);
+            console.log(game_progress[socket.room]);
             for (key in game_progress[socket.room]) {
+                console.log(key + ' ' + game_progress[socket.room][key]);
                 if (game_progress[socket.room][key] == closestNum) {
-                    socket.broadcast.to(socket.room).emit('send_message', 'Game complete. ' + key + ' is the winner!');
+                    io.sockets["in"](socket.room).emit('send_message', 'Game complete. ' + key + ' is the winner!');
                 }
             }
             game_progress[socket.room] = {};
+            game_list[socket.room] = 0;
+            game_number[socket.room] = 0;
         }
     }
 
