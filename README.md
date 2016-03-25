@@ -13,3 +13,7 @@ A simple multiplayer realtime game based on Nodejs and Websockets. It resembles 
 ### Game Logic
 
 When a user starts a game, the system assumes a positive integer between 1 and 1000. Rest of the users within the room will have to guess and enter a number between 1 and 1000. User who has entered an integer closest to the system number will win.
+
+### License
+
+This project is under MIT License.
